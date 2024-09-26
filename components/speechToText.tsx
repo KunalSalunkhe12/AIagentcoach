@@ -1,9 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Mic, StopCircle } from "lucide-react"; 
+import { Mic, StopCircle } from "lucide-react";
 import axios from "axios";
 import Modal from "@/components/ui/modal";
-import Spinner from "@/components/ui/spinner";
 import WaveformRecordingModal from "./WaveformRecordingModal";
 
 interface SpeechToTextProps {
@@ -26,7 +25,7 @@ const SpeechToText: React.FC<SpeechToTextProps> = ({ onTranscribe }) => {
         mediaRecorderRef.current.stop();
       }
       if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current.getTracks().forEach((track) => track.stop());
       }
       if (timerRef.current) {
         clearInterval(timerRef.current);
@@ -70,8 +69,12 @@ const SpeechToText: React.FC<SpeechToTextProps> = ({ onTranscribe }) => {
       };
 
       mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/wav" });
-        const audioFile = new File([audioBlob], "audio.wav", { type: "audio/wav" });
+        const audioBlob = new Blob(audioChunksRef.current, {
+          type: "audio/wav",
+        });
+        const audioFile = new File([audioBlob], "audio.wav", {
+          type: "audio/wav",
+        });
 
         setIsProcessing(true);
         const transcribedText = await transcribeAudio(audioFile);
@@ -98,7 +101,7 @@ const SpeechToText: React.FC<SpeechToTextProps> = ({ onTranscribe }) => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
     }
-    
+
     if (mediaRecorderRef.current) {
       mediaRecorderRef.current.stop();
     }
@@ -116,7 +119,10 @@ const SpeechToText: React.FC<SpeechToTextProps> = ({ onTranscribe }) => {
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+    return `${String(minutes).padStart(2, "0")}:${String(secs).padStart(
+      2,
+      "0"
+    )}`;
   };
 
   return (
@@ -127,13 +133,11 @@ const SpeechToText: React.FC<SpeechToTextProps> = ({ onTranscribe }) => {
           duration={timeElapsed}
           audioStream={streamRef.current} // Pass the audio stream
           onStop={stopRecording}
+          isProcessing={isProcessing}
         />
       )}
 
-      <button
-        type="button"
-        onClick={toggleListening}
-      >
+      <button type="button" onClick={toggleListening}>
         {isListening ? (
           <StopCircle className="h-4 w-4 text-red-500" />
         ) : (

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import "react-toastify/dist/ReactToastify.css";
-import { format } from "date-fns";
+import { add, format } from "date-fns";
 import styles from "./overall.module.css";
 import Link from "next/link";
 import {
@@ -18,6 +18,11 @@ import {
 } from "lucide-react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { toast } from "react-toastify";
+import { all } from "axios";
+import { px } from "framer-motion";
+import { relative } from "path";
+import { start } from "repl";
+import { text } from "stream/consumers";
 
 type ChatPreview = {
   chat_id: string;
@@ -71,45 +76,40 @@ function ChatHistory({ userId, supabase, userEmail }: any) {
     fetchChatPreviews();
 
     const checkSubscriptionStatus = async () => {
-      const { data, error } = await supabase
-        .from("user")
-        .select("subscribed_to_newsletter")
-        .eq("user_id", userId)
-        .single();
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_EMAIL_SERVER_URL}/check-email?email=${userEmail}`
+      );
 
-      if (data) {
-        setIsSubscribed(data.subscribed_to_newsletter);
+      if (!response.ok) {
+        console.error("Failed to check subscription status");
+        return;
       }
+
+      const data = await response.json();
+      console.log("Subscription status:", data.subscribed);
+      setIsSubscribed(data.subscribed);
     };
 
     checkSubscriptionStatus();
-  }, [userId, supabase]);
+  }, [userEmail, supabase, userId]);
 
   const handleSubscribe = async () => {
     try {
-      const response = await fetch("https://email.ritesh.live/add-emails", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ emails: [userEmail] }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_EMAIL_SERVER_URL}/add-emails`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ emails: [userEmail] }),
+        }
+      );
 
       console.log("Subscribed to newsletter:", response);
 
       if (!response.ok) {
         throw new Error("Failed to subscribe");
-      }
-
-      // Update user's subscription status in Supabase
-      const { error } = await supabase
-        .from("user")
-        .update({ subscribed_to_newsletter: true })
-        .eq("user_id", userId);
-
-      if (error) {
-        console.log("Supabase error:", error);
-        throw new Error("Failed to update subscription status");
       }
 
       setIsSubscribed(true);
