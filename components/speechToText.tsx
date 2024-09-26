@@ -1,8 +1,9 @@
+"use client";
+
 import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Mic, StopCircle } from "lucide-react";
 import axios from "axios";
-import Modal from "@/components/ui/modal";
 import WaveformRecordingModal from "./WaveformRecordingModal";
 
 interface SpeechToTextProps {
@@ -21,15 +22,7 @@ const SpeechToText: React.FC<SpeechToTextProps> = ({ onTranscribe }) => {
 
   useEffect(() => {
     return () => {
-      if (mediaRecorderRef.current) {
-        mediaRecorderRef.current.stop();
-      }
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop());
-      }
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
+      stopRecording();
     };
   }, []);
 
@@ -102,9 +95,24 @@ const SpeechToText: React.FC<SpeechToTextProps> = ({ onTranscribe }) => {
       clearInterval(timerRef.current);
     }
 
-    if (mediaRecorderRef.current) {
+    if (
+      mediaRecorderRef.current &&
+      mediaRecorderRef.current.state !== "inactive"
+    ) {
       mediaRecorderRef.current.stop();
     }
+
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => {
+        track.stop();
+        streamRef.current?.removeTrack(track);
+      });
+      streamRef.current = null;
+    }
+
+    setIsListening(false);
+    setShowModal(false);
+    setTimeElapsed(0);
   };
 
   const toggleListening = () => {
@@ -115,35 +123,30 @@ const SpeechToText: React.FC<SpeechToTextProps> = ({ onTranscribe }) => {
     }
   };
 
-  // Format time in mm:ss format
-  const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${String(minutes).padStart(2, "0")}:${String(secs).padStart(
-      2,
-      "0"
-    )}`;
-  };
-
   return (
     <>
-      {/* Modal for recording waveform */}
       {showModal && (
         <WaveformRecordingModal
           duration={timeElapsed}
-          audioStream={streamRef.current} // Pass the audio stream
+          audioStream={streamRef.current}
           onStop={stopRecording}
           isProcessing={isProcessing}
         />
       )}
 
-      <button type="button" onClick={toggleListening}>
+      <Button
+        type="button"
+        onClick={toggleListening}
+        variant="ghost"
+        size="icon"
+        className="p-0"
+      >
         {isListening ? (
           <StopCircle className="h-4 w-4 text-red-500" />
         ) : (
           <Mic className="h-6 w-6 text-[#2F76FF]" />
         )}
-      </button>
+      </Button>
     </>
   );
 };
