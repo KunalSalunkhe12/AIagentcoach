@@ -54,7 +54,12 @@ export default function RootLayout({
         </head>
         <body>
           {children}
-          <ToastContainer />
+          <ToastContainer
+            toastStyle={{
+              backgroundColor: "#1E2A5E",
+              color: "white",
+            }}
+          />
         </body>
       </html>
     </ClerkProvider>
