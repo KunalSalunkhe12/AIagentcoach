@@ -6,8 +6,8 @@ import {
   SignInButton,
   SignedIn,
   SignedOut,
-  UserButton
-} from '@clerk/nextjs'
+  UserButton,
+} from "@clerk/nextjs";
 import { ToastContainer } from "react-toastify";
 // import { ThemeProvider } from "@/components/theme-provider";
 const geistSans = localFont({
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <ClerkProvider>
@@ -52,11 +52,13 @@ export default function RootLayout({
             }}
           />
         </head>
-        <body>{children}</body>
+        <body>
+          {children}
+          <ToastContainer />
+        </body>
       </html>
     </ClerkProvider>
-  )
+  );
 }
-
 
 //h

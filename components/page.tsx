@@ -16,7 +16,7 @@ import {
   TargetIcon,
 } from "lucide-react";
 
-import { useAuth, useClerk } from "@clerk/nextjs";
+import { useAuth, useClerk, useUser } from "@clerk/nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import { v4 as uuidv4 } from "uuid";
@@ -41,6 +41,8 @@ export function Page() {
   const [currentExpert, setCurrentExpert] = useState<ExpertType>("General");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { isLoaded, isSignedIn, userId } = useAuth();
+  const { user } = useUser();
+  const [userEmail, setUserEmail] = useState("");
   const router = useRouter();
   const searchParams = useSearchParams();
   const { signOut } = useClerk();
@@ -49,6 +51,12 @@ export function Page() {
   const supabase = createClient(supabaseUrl, supabaseKey);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [isIntroModalOpen, setIsIntroModalOpen] = useState(true);
+
+  useEffect(() => {
+    if (isLoaded && isSignedIn && user) {
+      setUserEmail(user.primaryEmailAddress?.emailAddress || "");
+    }
+  }, [isLoaded, isSignedIn, user]);
 
   useEffect(() => {
     const expertType = searchParams.get("expertType");
@@ -164,6 +172,7 @@ export function Page() {
       >
         <ChatSidebar
           userId={userId}
+          userEmail={userEmail}
           supabase={supabase}
           isSidebarOpen={isSidebarOpen}
           handleExpertClick={handleExpertClick}
